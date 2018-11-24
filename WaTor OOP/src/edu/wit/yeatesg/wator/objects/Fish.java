@@ -56,13 +56,13 @@ public class Fish extends Entity
 	}
 	
 	/**
-	 * Called to see if this Fish should reproduce. Every {@link Fish#chrononsTillReproduce} that
+	 * Called to see if this Fish should reproduce. Every {@link Fish#TICKS_TILL_REPRODUCE} that
 	 * this Fish survives for, it will {@link #reproduce()}
 	 */
 	@Override
 	public void preReproduce()
 	{
-		if (survived % Fish.chrononsTillReproduce == 0)
+		if (survived % Fish.TICKS_TILL_REPRODUCE == 0)
 		{
 			reproduce();
 		}
@@ -83,16 +83,14 @@ public class Fish extends Entity
 			new Fish(map.nextArray, startLoc);
 		}
 	}
+
 	
-	/*********************************************************************************************************************
-	 * 																																						*
-	 * 																		CLASS FIELDS																*
-	 * 																																						*
-	 *********************************************************************************************************************/	
+	// Class Fields
 	
-	/** Every time a fish survives for {@link #chrononsTillReproduce} chronons, it will reproduce */
-	public static int chrononsTillReproduce;
+
+	/** Every time a fish survives for {@link #TICKS_TILL_REPRODUCE} chronons, it will reproduce */
+	public static int TICKS_TILL_REPRODUCE;
 	
 	/** How much energy should a Shark gain from eating any fish? */
-	public static int fishEnergyWorth;
+	public static int ENERGY_WORTH;
 }

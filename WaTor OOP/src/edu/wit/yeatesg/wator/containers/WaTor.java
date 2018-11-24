@@ -21,22 +21,26 @@ public class WaTor extends JPanel
 {
 	private static final long serialVersionUID = 1777168099445808538L;
 	
-	private static final int PREF_XY_BOUND = 1000;
+	private static final int PREF_X_BOUND = 1800;
+	private static final int PREF_Y_BOUND = 1000;
 	
-	public static final Random R = new Random(123456);
+	public static final Random R = new Random();
 	
 	private int tileSize;
 	
 	private int gridlineSize;
 	private int numGridlines;
 	
-	private int preferredLength;
+	private int preferredWidth;
+	private int preferredHeight;
+	
+	private int numVerticalTiles;
 	
 	private Map map;
 	
 	public static void main(String[] args)
 	{
-		openDisplayGUI(450, 0);
+		openDisplayGUI(540, 0);
 	}
 	
 	private static void openDisplayGUI(int width, int gridThickness)
@@ -44,7 +48,7 @@ public class WaTor extends JPanel
 		JFrame gameFrame = new JFrame();
 
 		WaTor gamePanel = new WaTor(width, gridThickness);
-		gamePanel.setPreferredSize(new Dimension(gamePanel.preferredLength, gamePanel.preferredLength));
+		gamePanel.setPreferredSize(new Dimension(gamePanel.preferredWidth, gamePanel.preferredHeight));
 		gameFrame.getContentPane().add(gamePanel);
 		gameFrame.pack();
 		gameFrame.getContentPane().setBackground(Color.LIGHT_GRAY);
@@ -57,13 +61,15 @@ public class WaTor extends JPanel
 	/**
 	 * Create the panel.
 	 */
-	public WaTor(int numTiles, int gridlineSize)
+	public WaTor(int numHorizontalTiles, int gridlineSize)
 	{
 		presetFast();
-				
-		setSpatialFields(numTiles, gridlineSize);
+		setSpatialFields(numHorizontalTiles, gridlineSize);
 		
-		map = new Map(numTiles, this);
+		System.out.println(numHorizontalTiles);
+		System.out.println(numVerticalTiles);
+		map = new Map(numHorizontalTiles, numVerticalTiles, this);
+
 		map.randomFill(0.98, 0.02);
 		repaint();
 		
@@ -73,32 +79,44 @@ public class WaTor extends JPanel
 	
 	public void presetFast()
 	{
-		Fish.chrononsTillReproduce = 5;
-		Fish.fishEnergyWorth = 3;
+		Fish.TICKS_TILL_REPRODUCE = 6;
+		Fish.ENERGY_WORTH = 3;
 
-		Shark.invulnerabilityPeriod = 3;
-		Shark.baseEnergy = 0;
-		Shark.chrononsTillReproduce = 1;
+		Shark.INVULNERABILITY_TICKS = 3;
+		Shark.BASE_ENERGY = 0;
+		Shark.TICKS_TILL_REPRODUCE = 1;
+		Shark.MAX_ENERGY = 12;
+	}
+	
+	public void idek()
+	{
+		Fish.TICKS_TILL_REPRODUCE = 24;
+		Fish.ENERGY_WORTH = 6;
+
+		Shark.INVULNERABILITY_TICKS = 9;
+		Shark.BASE_ENERGY = 0;
+		Shark.TICKS_TILL_REPRODUCE = 3;
+		Shark.MAX_ENERGY = 9;
 	}
 
 	public void presetFullExtinction()
 	{
-		Fish.chrononsTillReproduce = 15;
-		Fish.fishEnergyWorth = 10;
+		Fish.TICKS_TILL_REPRODUCE = 15;
+		Fish.ENERGY_WORTH = 10;
 
-		Shark.invulnerabilityPeriod = 20;
-		Shark.baseEnergy = 0;
-		Shark.chrononsTillReproduce = 1;
+		Shark.INVULNERABILITY_TICKS = 20;
+		Shark.BASE_ENERGY = 0;
+		Shark.TICKS_TILL_REPRODUCE = 1;
 	}
 
 	public void presetCycle1()
 	{
-		Fish.chrononsTillReproduce = 8;
-		Fish.fishEnergyWorth = 5;
+		Fish.TICKS_TILL_REPRODUCE = 8;
+		Fish.ENERGY_WORTH = 5;
 
-		Shark.invulnerabilityPeriod = 15;
-		Shark.baseEnergy = 0;
-		Shark.chrononsTillReproduce = 2;
+		Shark.INVULNERABILITY_TICKS = 15;
+		Shark.BASE_ENERGY = 0;
+		Shark.TICKS_TILL_REPRODUCE = 2;
 	}
 
 	class Clock implements ActionListener
@@ -118,27 +136,29 @@ public class WaTor extends JPanel
 	public void tick()
 	{
 		tickNum++;
-		if (tickNum > 300)
+		if (tickNum > 50)
 		{
 			map.nextChronon();
 		}
 	}
 
-	private void setSpatialFields(int numTiles, int gridlineSize)
+	private void setSpatialFields(int numHorizontalTiles, int gridlineSize)
 	{
-		
-		this.numGridlines = numTiles + 1;
+		this.numGridlines = numHorizontalTiles + 1;
 		this.gridlineSize = gridlineSize;
 		
-		this.tileSize = (PREF_XY_BOUND - numGridlines*gridlineSize) / numTiles;
+		this.tileSize = (PREF_X_BOUND - numGridlines*gridlineSize) / numHorizontalTiles;
 		
-		this.preferredLength = numTiles*tileSize + numGridlines*gridlineSize - 10;		
+		this.numVerticalTiles = (PREF_Y_BOUND - numGridlines*gridlineSize) / tileSize;
+		
+		this.preferredHeight = numVerticalTiles*tileSize + numGridlines*gridlineSize - 10;
+		this.preferredWidth = numHorizontalTiles*tileSize + numGridlines*gridlineSize - 10;	
 	}
 
 	@Override
 	public Dimension getPreferredSize()
 	{
-		return new Dimension(preferredLength, preferredLength);
+		return new Dimension(preferredWidth, preferredHeight);
 	}
 	
 	private Color gridlineColor = Color.DARK_GRAY;
@@ -150,13 +170,13 @@ public class WaTor extends JPanel
 	public void paint(Graphics g)
 	{
 		g.setColor(gridlineColor);
-		g.fillRect(0, 0, preferredLength, preferredLength);
+		g.fillRect(0, 0, preferredWidth, preferredWidth);
 
 		int yPos = gridlineSize;
 		for (int y = 0; y < map.array.length; y++)
 		{
 			int xPos = gridlineSize;
-			for (int x = 0; x < map.array.length; x++)
+			for (int x = 0; x < map.array[1].length; x++)
 			{
 				Entity entity = Entity.at(new Location(y, x));
 				

@@ -15,9 +15,7 @@ public abstract class Entity implements Movable, Reproducable
 	protected int survived;
 	
 	/** Represents sets of Locations of adjacent Fish, Sharks, and spaces relative to this Entity */
-	protected List<Location> adjacentSharks,
-									 adjacentFish,
-									 adjacentSpaces;
+	protected List<Location> adjacentSharks, adjacentFish, adjacentSpaces;
 	
 	/**
 	 * Updates the Location list fields that represent locations the entities that are adjacent to this 
@@ -61,7 +59,7 @@ public abstract class Entity implements Movable, Reproducable
 
 		List<Location> nearby = new ArrayList<Location>();
 
-		if (x < map.maxIndex)
+		if (x < map.max_X_index)
 		{
 			nearby.add(new Location(y, x + 1));
 		}
@@ -69,7 +67,7 @@ public abstract class Entity implements Movable, Reproducable
 		{
 			nearby.add(new Location(y, x - 1));
 		}
-		if (y < map.maxIndex)
+		if (y < map.max_Y_index)
 		{
 			nearby.add(new Location(y + 1, x));
 		}
@@ -81,11 +79,9 @@ public abstract class Entity implements Movable, Reproducable
 		return nearby;
 	}
 	
-	/*********************************************************************************************************************
-	 * 																																						*
-	 * 																		CLASS FIELDS																*
-	 * 																																						*
-	 *********************************************************************************************************************/
+
+	// Class Fields
+	
 	
 	/** The Map that all entities in this simulation exist on */
 	protected static Map map;

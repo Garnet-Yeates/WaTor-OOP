@@ -10,27 +10,32 @@ public class Map
 {
 	private WaTor container;
 
-	private int numTiles;
+	private int numHorizontalTiles;
+	private int numVerticalTiles;
 	
 	public Entity[][] array;
 	public Entity[][] nextArray;
-	public int maxIndex;
+	public int max_X_index;
+	public int max_Y_index;
 	public int minIndex;
 	
 	public int chrononNum;
 
-	public Map(int numTilesPerSide, WaTor container)
+	public Map(int numHorizontalTiles, int numVerticalTiles, WaTor container)
 	{
 		Entity.setMap(this);
 		this.container = container;
 
-		array = new Entity[numTilesPerSide][numTilesPerSide];
-		nextArray = new Entity[numTilesPerSide][numTilesPerSide];
+		this.numHorizontalTiles = numHorizontalTiles;
+		this.numVerticalTiles = numVerticalTiles;
+		
+		array = new Entity[numVerticalTiles][numHorizontalTiles];
+		nextArray = new Entity[numVerticalTiles][numHorizontalTiles];
 		clear(array);
 		clear(nextArray);
 
-		numTiles = numTilesPerSide;
-		maxIndex = array.length - 1;
+		max_Y_index = array.length - 1;
+		max_X_index = array[1].length - 1;
 		minIndex = 0;
 
 		chrononNum = 0;			
@@ -51,9 +56,9 @@ public class Map
 	public void doEntityMovements()
 	{
 		Location loc = new Location(0, 0);
-		for (int y = 0; y < array.length; y++)
+		for (int y = 0; y <= max_Y_index; y++)
 		{
-			for (int x = 0; x < array.length; x++)
+			for (int x = 0; x <= max_X_index; x++)
 			{
 				loc.setY(y);
 				loc.setX(x);
@@ -77,7 +82,7 @@ public class Map
 	{
 		for (int y = 0; y < clearing.length; y++)
 		{
-			for (int x = 0; x < clearing.length; x++)
+			for (int x = 0; x < clearing[y].length; x++)
 			{
 				clearing[y][x] = null;
 			}
@@ -86,7 +91,7 @@ public class Map
 
 	private static Entity[][] cloneArray(Entity[][] arr)
 	{
-		Entity[][] clone = new Entity[arr.length][arr.length];
+		Entity[][] clone = new Entity[arr.length][arr[1].length];
 		for (int y = 0; y < arr.length; y++)
 		{
 			for (int x = 0; x < arr[y].length; x++)
@@ -103,8 +108,8 @@ public class Map
 
 		clear(array);
 
-		int maxCells = (int) (numTiles * numTiles * 0.45);
-		int minCells = (int) (numTiles * numTiles * 0.25);
+		int maxCells = (int) (numHorizontalTiles * numVerticalTiles * 0.45);
+		int minCells = (int) (numHorizontalTiles * numVerticalTiles * 0.25);
 
 		int totalEntitiesToAdd = WaTor.R.nextInt(maxCells - minCells) + minCells;
 		int numSharksToAdd = (int) (totalEntitiesToAdd * sharkWeight);
@@ -121,7 +126,7 @@ public class Map
 		ArrayList<Location> emptyTileLocs = new ArrayList<Location>();
 		for (int y = 0; y < array.length; y++)
 		{
-			for (int x = 0; x < array.length; x++)
+			for (int x = 0; x < array[1].length; x++)
 			{
 				if (array[y][x] == null)
 				{
@@ -160,9 +165,9 @@ public class Map
 
 	public void print()
 	{
-		for (int y = 0; y < array.length; y++)
+		for (int y = 0; y <= max_Y_index; y++)
 		{
-			for (int x = 0; x < array.length; x++)
+			for (int x = 0; x <= max_X_index; x++)
 			{	
 				if (array[y][x] instanceof Shark)
 				{

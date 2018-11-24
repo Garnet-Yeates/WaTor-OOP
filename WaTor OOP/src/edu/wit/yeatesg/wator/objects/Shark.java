@@ -25,7 +25,7 @@ public class Shark extends Entity
 	public Shark(Entity[][] array, Location loc)
 	{
 		array[loc.getY()][loc.getX()] = this;
-		energy = baseEnergy;
+		energy = BASE_ENERGY;
 		survived = 0;
 		location = loc;
 	}
@@ -57,9 +57,8 @@ public class Shark extends Entity
 		boolean moved = true;
 		if (hasAdjFish)
 		{
-			System.out.println(adjacentFish.size());
 			location = adjacentFish.get(WaTor.R.nextInt(adjacentFish.size()));
-			energy+= Fish.fishEnergyWorth;
+			depleteEnergy(Fish.ENERGY_WORTH * -1);
 		}
 		else if (hasAdjSpace)
 		{
@@ -68,6 +67,11 @@ public class Shark extends Entity
 		else
 		{
 			moved = false;
+		}
+		
+		if (energy > Shark.MAX_ENERGY)
+		{
+			energy = Shark.MAX_ENERGY;
 		}
 		
 		map.nextArray[location.getY()][location.getX()] = this;
@@ -80,18 +84,18 @@ public class Shark extends Entity
 	/**
 	 * This method is called every movement, so in essense it is called every game tick
 	 * to check to see if this Shark should die. If the Shark runs out of energy and hasn't
-	 * survived for longer than {@link #invulnerabilityPeriod}, then it will die.
+	 * survived for longer than {@link #INVULNERABILITY_TICKS}, then it will die.
 	 */
 	public void updateMortality()
 	{
-		if (energy < 1 && survived > invulnerabilityPeriod)
+		if (energy < 1 && survived > INVULNERABILITY_TICKS)
 		{
 			map.nextArray[location.getY()][location.getX()] = null;
 		}
 	}
 
 	/**
-	 * Called to see if this Shark should reproduce. Every {@link Shark#chrononsTillReproduce} that
+	 * Called to see if this Shark should reproduce. Every {@link Shark#TICKS_TILL_REPRODUCE} that
 	 * this Shark survives for, it will {@link #reproduce()} as long as it has energy. (Normally not having energy
 	 * means that this Shark should die, but if it is still in the invulnerability period it will have
 	 * 0 energy without dying)
@@ -99,7 +103,7 @@ public class Shark extends Entity
 	@Override
 	public void preReproduce()
 	{
-		if (survived % Shark.chrononsTillReproduce == 0 && energy > 0)
+		if (survived % Shark.TICKS_TILL_REPRODUCE == 0 && energy > 0)
 		{
 			reproduce();
 		}
@@ -139,18 +143,18 @@ public class Shark extends Entity
 		return energy;
 	}
 
-	/*********************************************************************************************************************
-	 * 																																						*
-	 * 																		CLASS FIELDS																*
-	 * 																																						*
-	 *********************************************************************************************************************/
 
+	// Class Fields
+	
+	/** How much energy can a Shark have? */
+	public static int MAX_ENERGY = 50;
+	
 	/** How much energy should every Shark have when they are born? */
-	public static int baseEnergy;
+	public static int BASE_ENERGY = 0;
 	
 	/** How many game ticks does every Shark need to survive for in order to reproduce? */
-	public static int chrononsTillReproduce;
+	public static int TICKS_TILL_REPRODUCE = 5;
 	
 	/** How many ticks does every Shark need to be alive for before they can die? */
-	public static int invulnerabilityPeriod;
+	public static int INVULNERABILITY_TICKS = 0;
 }
