@@ -1,13 +1,10 @@
-package edu.wit.yeatesg.wator.containers;
+package edu.wit.yeatesg.wator.objects;
 
 import java.util.ArrayList;
 
+import edu.wit.yeatesg.wator.containers.WaTor;
 import edu.wit.yeatesg.wator.interfaces.Movable;
 import edu.wit.yeatesg.wator.interfaces.Reproducable;
-import edu.wit.yeatesg.wator.objects.Entity;
-import edu.wit.yeatesg.wator.objects.Fish;
-import edu.wit.yeatesg.wator.objects.Location;
-import edu.wit.yeatesg.wator.objects.Shark;
 
 public class Map
 {
@@ -188,4 +185,3 @@ public class Map
 		System.out.println("\n\n");
 	}
 }
-

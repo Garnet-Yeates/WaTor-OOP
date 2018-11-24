@@ -1,25 +1,29 @@
 package edu.wit.yeatesg.wator.objects;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import edu.wit.yeatesg.wator.containers.Map;
 import edu.wit.yeatesg.wator.interfaces.Movable;
 import edu.wit.yeatesg.wator.interfaces.Reproducable;
 
 public abstract class Entity implements Movable, Reproducable
 {		
+	/** The Location of this Entity in {@link Entity#map} */
 	protected Location location;
 
+	/** The number of game-ticks (chronons) that this Entity has survived for */
 	protected int survived;
 	
-	protected int reproductionRate;
-
-	protected List<Location> adjacentSharks;
-	protected List<Location> adjacentFish;
-	protected List<Location> adjacentSpaces;
+	/** Represents sets of Locations of adjacent Fish, Sharks, and spaces relative to this Entity */
+	protected List<Location> adjacentSharks,
+									 adjacentFish,
+									 adjacentSpaces;
 	
+	/**
+	 * Updates the Location list fields that represent locations the entities that are adjacent to this 
+	 * Entity. In this program, adjacency is defined as any tile directly next to another tile (not
+	 * diagnal). See {@link #adjacentFish}, {@link #adjacentSharks}, and {@link #adjacentSpaces}
+	 */
 	protected void updateAdjacencyLists()
 	{
 		adjacentFish = new ArrayList<Location>();
@@ -45,12 +49,17 @@ public abstract class Entity implements Movable, Reproducable
 		}
 	}
 	
+	/**
+	 * Obtains the list of all (max 4) adjacent Locations to this Entity. If there are less than 4
+	 * Locations in this list, it means that this Entity exists at an edge or corner of {@link Entity#map}
+	 * @return a list containing all adjacent Locations to this Entity's location
+	 */
 	protected List<Location> getAdjacentLocations()
 	{
 		int x = location.getX();
 		int y = location.getY();
 
-		List<Location> nearby = Collections.synchronizedList(new ArrayList<Location>());
+		List<Location> nearby = new ArrayList<Location>();
 
 		if (x < map.maxIndex)
 		{
@@ -72,22 +81,32 @@ public abstract class Entity implements Movable, Reproducable
 		return nearby;
 	}
 	
-	public void setLocation(Location loc)
-	{
-		this.location = loc;
-	}
+	/*********************************************************************************************************************
+	 * 																																						*
+	 * 																		CLASS FIELDS																*
+	 * 																																						*
+	 *********************************************************************************************************************/
 	
-	// Class Fields and Methods below
-	
+	/** The Map that all entities in this simulation exist on */
 	protected static Map map;
 	
+	/**
+	 * Changes the Map that all entities will be spawned into. It is only recommended that this
+	 * is changed at the beginning of the simulation and never again.
+	 * @param map The new map
+	 */
 	public static void setMap(Map map)
 	{
 		Entity.map = map;
 	}
 	
-	public static Entity at(Location p)
+	/**
+	 * Obtains the Entity that exists at the given Location in {@link Entity#map}
+	 * @param loc the location in {@link Entity#map}
+	 * @return the Entity at this location, or null if no Entity exists here
+	 */
+	public static Entity at(Location loc)
 	{
-		return map.array[p.getY()][p.getX()];
+		return map.array[loc.getY()][loc.getX()];
 	}
 }

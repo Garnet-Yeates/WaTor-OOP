@@ -14,6 +14,7 @@ import javax.swing.Timer;
 import edu.wit.yeatesg.wator.objects.Entity;
 import edu.wit.yeatesg.wator.objects.Fish;
 import edu.wit.yeatesg.wator.objects.Location;
+import edu.wit.yeatesg.wator.objects.Map;
 import edu.wit.yeatesg.wator.objects.Shark;
 
 public class WaTor extends JPanel
@@ -35,7 +36,7 @@ public class WaTor extends JPanel
 	
 	public static void main(String[] args)
 	{
-		openDisplayGUI(500, 0);
+		openDisplayGUI(450, 0);
 	}
 	
 	private static void openDisplayGUI(int width, int gridThickness)
@@ -72,34 +73,34 @@ public class WaTor extends JPanel
 	
 	public void presetFast()
 	{
-		Fish.setChrononsTillReproduce(5);
-		Fish.setFishEnergyWorth(3);
-		
-		Shark.setInvulnerabilityPeriod(3);
-		Shark.setBaseEnergy(0);
-		Shark.setChrononsTillReproduce(1);
+		Fish.chrononsTillReproduce = 5;
+		Fish.fishEnergyWorth = 3;
+
+		Shark.invulnerabilityPeriod = 3;
+		Shark.baseEnergy = 0;
+		Shark.chrononsTillReproduce = 1;
 	}
-	
+
 	public void presetFullExtinction()
 	{
-		Fish.setChrononsTillReproduce(15);
-		Fish.setFishEnergyWorth(10);
-		
-		Shark.setInvulnerabilityPeriod(20);
-		Shark.setBaseEnergy(0);
-		Shark.setChrononsTillReproduce(1);
+		Fish.chrononsTillReproduce = 15;
+		Fish.fishEnergyWorth = 10;
+
+		Shark.invulnerabilityPeriod = 20;
+		Shark.baseEnergy = 0;
+		Shark.chrononsTillReproduce = 1;
 	}
-	
+
 	public void presetCycle1()
 	{
-		Fish.setChrononsTillReproduce(8);
-		Fish.setFishEnergyWorth(5);
-		
-		Shark.setInvulnerabilityPeriod(15);
-		Shark.setBaseEnergy(0);
-		Shark.setChrononsTillReproduce(2);
+		Fish.chrononsTillReproduce = 8;
+		Fish.fishEnergyWorth = 5;
+
+		Shark.invulnerabilityPeriod = 15;
+		Shark.baseEnergy = 0;
+		Shark.chrononsTillReproduce = 2;
 	}
-	
+
 	class Clock implements ActionListener
 	{
 		@Override
