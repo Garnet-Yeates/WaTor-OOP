@@ -1,6 +1,8 @@
 package edu.wit.yeatesg.wator.objects;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import edu.wit.yeatesg.wator.interfaces.Movable;
@@ -8,15 +10,22 @@ import edu.wit.yeatesg.wator.interfaces.Reproducable;
 
 public abstract class Entity implements Movable, Reproducable
 {		
+	/** This entity's unique id */
+	protected int id;
+	
 	/** The Location of this Entity in {@link Entity#map} */
 	protected Location location;
 
 	/** The number of game-ticks (chronons) that this Entity has survived for */
 	protected int survived;
-	
-	/** Represents sets of Locations of adjacent Fish, Sharks, and spaces relative to this Entity */
-	protected List<Location> adjacentSharks, adjacentFish, adjacentSpaces;
-	
+
+	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	protected List<Location> adjacentFish = Collections.synchronizedList(new ArrayList<Location>());
+	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	protected List<Location> adjacentSharks = Collections.synchronizedList(new ArrayList<Location>());
+	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	protected List<Location> adjacentSpaces = Collections.synchronizedList(new ArrayList<Location>());
+
 	/**
 	 * Updates the Location list fields that represent locations the entities that are adjacent to this 
 	 * Entity. In this program, adjacency is defined as any tile directly next to another tile (not
@@ -24,14 +33,17 @@ public abstract class Entity implements Movable, Reproducable
 	 */
 	protected void updateAdjacencyLists()
 	{
-		adjacentFish = new ArrayList<Location>();
-		adjacentSharks = new ArrayList<Location>();
-		adjacentSpaces = new ArrayList<Location>();
-		
-		for (Location loc : getAdjacentLocations())
+		adjacentFish.clear();
+		adjacentSharks.clear();
+		adjacentSpaces.clear();
+
+		List<Location> nearby = getAdjacentLocations();
+		Iterator<Location> i = nearby.iterator(); // Must be in synchronized block
+		while (i.hasNext())
 		{
+			Location loc = i.next();
 			Entity e = Entity.at(loc);
-			
+
 			if (e instanceof Shark)
 			{
 				adjacentSharks.add(loc);
@@ -44,9 +56,11 @@ public abstract class Entity implements Movable, Reproducable
 			{
 				adjacentSpaces.add(loc);
 			}
+
 		}
+
 	}
-	
+
 	/**
 	 * Obtains the list of all (max 4) adjacent Locations to this Entity. If there are less than 4
 	 * Locations in this list, it means that this Entity exists at an edge or corner of {@link Entity#map}
@@ -57,7 +71,7 @@ public abstract class Entity implements Movable, Reproducable
 		int x = location.getX();
 		int y = location.getY();
 
-		List<Location> nearby = new ArrayList<Location>();
+		List<Location> nearby = Collections.synchronizedList(new ArrayList<Location>());
 
 		if (x < map.max_X_index)
 		{
@@ -75,17 +89,20 @@ public abstract class Entity implements Movable, Reproducable
 		{
 			nearby.add(new Location(y - 1, x));
 		}
-		
+
 		return nearby;
 	}
-	
+
 
 	// Class Fields
 	
-	
+
+	/** Used to assign unique ids to entitis */
+	protected static int idAssign = 0;
+
 	/** The Map that all entities in this simulation exist on */
 	protected static Map map;
-	
+
 	/**
 	 * Changes the Map that all entities will be spawned into. It is only recommended that this
 	 * is changed at the beginning of the simulation and never again.
@@ -95,7 +112,7 @@ public abstract class Entity implements Movable, Reproducable
 	{
 		Entity.map = map;
 	}
-	
+
 	/**
 	 * Obtains the Entity that exists at the given Location in {@link Entity#map}
 	 * @param loc the location in {@link Entity#map}
@@ -104,5 +121,20 @@ public abstract class Entity implements Movable, Reproducable
 	public static Entity at(Location loc)
 	{
 		return map.array[loc.getY()][loc.getX()];
+	}
+	
+	/**
+	 * Checks to see if this entity is equivalent to another entity. Any two entities are considered
+	 * equal if they have the same id
+	 * @return true if these entities are equal
+	 */
+	@Override
+	public boolean equals(Object other)
+	{
+		if (other instanceof Entity && ((Entity) other).id == id)
+		{
+			return true;
+		}
+		return false;
 	}
 }

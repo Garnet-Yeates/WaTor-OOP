@@ -28,6 +28,8 @@ public class Shark extends Entity
 		energy = BASE_ENERGY;
 		survived = 0;
 		location = loc;
+		id = idAssign;
+		idAssign++;
 	}
 	
 	/**
@@ -51,20 +53,34 @@ public class Shark extends Entity
 
 		updateAdjacencyLists();
 		
-		boolean hasAdjSpace = this.adjacentSpaces.size() > 0 ? true : false;
-		boolean hasAdjFish = this.adjacentFish.size() > 0 ? true : false;
-			
 		boolean moved = true;
-		if (hasAdjFish)
+		boolean hasAdjFish;
+		synchronized (adjacentFish)
 		{
-			location = adjacentFish.get(WaTor.R.nextInt(adjacentFish.size()));
-			depleteEnergy(Fish.ENERGY_WORTH * -1);
+			int size = adjacentFish.size();
+			hasAdjFish = size > 0 ? true : false;
+			if (hasAdjFish)
+			{
+				location = adjacentFish.get(WaTor.R.nextInt(size));
+				depleteEnergy(Fish.ENERGY_WORTH * -1);
+			}
 		}
-		else if (hasAdjSpace)
+		
+		boolean hasAdjSpace = false;
+		if (!hasAdjFish)
 		{
-			location = adjacentSpaces.get(WaTor.R.nextInt(adjacentSpaces.size()));
+			synchronized (adjacentSpaces)
+			{
+				int size = adjacentSpaces.size();
+				hasAdjSpace = size > 0 ? true : false;
+				if (hasAdjSpace)
+				{
+					location = adjacentSpaces.get(WaTor.R.nextInt(size));
+				}
+			}		
 		}
-		else
+		
+		if (!hasAdjFish && !hasAdjSpace)
 		{
 			moved = false;
 		}
@@ -142,7 +158,6 @@ public class Shark extends Entity
 	{
 		return energy;
 	}
-
 
 	// Class Fields
 	

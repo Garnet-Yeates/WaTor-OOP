@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -20,139 +21,105 @@ import edu.wit.yeatesg.wator.objects.Shark;
 public class WaTor extends JPanel
 {
 	private static final long serialVersionUID = 1777168099445808538L;
-	
-	private static final int PREF_X_BOUND = 1800;
+
+	private static final int PREF_X_BOUND = 1915;
 	private static final int PREF_Y_BOUND = 1000;
 	
-	public static final Random R = new Random();
-	
-	private int tileSize;
-	
-	private int gridlineSize;
-	private int numGridlines;
-	
-	private int preferredWidth;
-	private int preferredHeight;
-	
-	private int numVerticalTiles;
-	
-	private Map map;
-	
+	private JFrame container;
+
+	public static final Random R = new Random(1);
+
 	public static void main(String[] args)
 	{
-		openDisplayGUI(540, 0);
+		openDisplayGUI(1915, 0);
 	}
-	
+
 	private static void openDisplayGUI(int width, int gridThickness)
 	{
 		JFrame gameFrame = new JFrame();
+		WaTor gamePanel = new WaTor(width, gridThickness, gameFrame);
+		gamePanel.setFrameWidth();
+		gamePanel.map.presetCycle1();
+	}
+	
+	public void setFrameWidth()
+	{
+		this.setPreferredSize(new Dimension(this.preferredWidth, this.preferredHeight));
+		container.getContentPane().add(this);
+		container.pack();
+		container.getContentPane().setBackground(Color.LIGHT_GRAY);
+		container.setResizable(false);
+		container.setVisible(true);
+		container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		container.add(this);		
+	}
+	
+	
+	
+	// Constructor and Instance Fields
+	
+	
+	private int tileSize;
 
-		WaTor gamePanel = new WaTor(width, gridThickness);
-		gamePanel.setPreferredSize(new Dimension(gamePanel.preferredWidth, gamePanel.preferredHeight));
-		gameFrame.getContentPane().add(gamePanel);
-		gameFrame.pack();
-		gameFrame.getContentPane().setBackground(Color.LIGHT_GRAY);
-		gameFrame.setResizable(false);
-		gameFrame.setVisible(true);
-		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gameFrame.add(gamePanel);		
+	private int gridlineSize;
+	private int numGridlines;
+
+	private int preferredWidth;
+	private int preferredHeight;
+
+	private int numVerticalTiles;
+
+	private Map map;
+
+	public WaTor(int numHorizontalTiles, int gridlineSize, JFrame container)
+	{
+		this.container = container;
+		setSpatialFields(numHorizontalTiles, gridlineSize);
+
+		map = new Map(numHorizontalTiles, numVerticalTiles, this);
+
+		map.randomFill(0.99, 0.01);
+		repaint();
+
+		timer.setInitialDelay(0);
+		timer.start();
+		tim.start();		
 	}
 	
 	/**
-	 * Create the panel.
+	 * Every 10 milliseconds a new game tick occurs (100 per second). The simulation can't actually run that
+	 * fast and it runs from 4-40 times per second depending on how many entities are on screen
 	 */
-	public WaTor(int numHorizontalTiles, int gridlineSize)
-	{
-		presetFast();
-		setSpatialFields(numHorizontalTiles, gridlineSize);
-		
-		System.out.println(numHorizontalTiles);
-		System.out.println(numVerticalTiles);
-		map = new Map(numHorizontalTiles, numVerticalTiles, this);
-
-		map.randomFill(0.98, 0.02);
-		repaint();
-		
-		timer.setInitialDelay(0);
-		timer.start();
-	}
-	
-	public void presetFast()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 6;
-		Fish.ENERGY_WORTH = 3;
-
-		Shark.INVULNERABILITY_TICKS = 3;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 1;
-		Shark.MAX_ENERGY = 12;
-	}
-	
-	public void idek()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 24;
-		Fish.ENERGY_WORTH = 6;
-
-		Shark.INVULNERABILITY_TICKS = 9;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 3;
-		Shark.MAX_ENERGY = 9;
-	}
-
-	public void presetFullExtinction()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 15;
-		Fish.ENERGY_WORTH = 10;
-
-		Shark.INVULNERABILITY_TICKS = 20;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 1;
-	}
-
-	public void presetCycle1()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 8;
-		Fish.ENERGY_WORTH = 5;
-
-		Shark.INVULNERABILITY_TICKS = 15;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 2;
-	}
-
-	class Clock implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent arg0)
-		{
-			tick();
-		}
-	}
-	
-	private int delay = 10;
-	private Timer timer = new Timer(delay, new Clock());
-	
-	private int tickNum = 0;
-	
 	public void tick()
 	{
 		tickNum++;
-		if (tickNum > 50)
+		if (tickNum > INITIAL_DELAY)
 		{
 			map.nextChronon();
 		}
 	}
-
+	
+	/**
+	 * Sets the size of this component
+	 * @param numHorizontalTiles
+	 * @param gridlineSize
+	 */
 	private void setSpatialFields(int numHorizontalTiles, int gridlineSize)
 	{
+		this.tileSize = (int) Math.ceil(((double) PREF_X_BOUND - (double) numGridlines*gridlineSize) / (double) numHorizontalTiles);
+		
+		numHorizontalTiles = (PREF_X_BOUND / tileSize);
+				
 		this.numGridlines = numHorizontalTiles + 1;
 		this.gridlineSize = gridlineSize;
-		
-		this.tileSize = (PREF_X_BOUND - numGridlines*gridlineSize) / numHorizontalTiles;
-		
-		this.numVerticalTiles = (PREF_Y_BOUND - numGridlines*gridlineSize) / tileSize;
-		
+				
+		this.numVerticalTiles = (int) (((double) PREF_Y_BOUND / (double) PREF_X_BOUND) * (double) numHorizontalTiles);
+
 		this.preferredHeight = numVerticalTiles*tileSize + numGridlines*gridlineSize - 10;
-		this.preferredWidth = numHorizontalTiles*tileSize + numGridlines*gridlineSize - 10;	
+		this.preferredWidth = numHorizontalTiles*tileSize + numGridlines*gridlineSize - 10;
+		
+		System.out.println(numHorizontalTiles + " x " + numVerticalTiles);
+
 	}
 
 	@Override
@@ -160,48 +127,152 @@ public class WaTor extends JPanel
 	{
 		return new Dimension(preferredWidth, preferredHeight);
 	}
-	
-	private Color gridlineColor = Color.DARK_GRAY;
+
 	private Color fishColor = Color.GREEN;
 	private Color sharkColor = Color.BLUE;
 	private Color spaceColor = Color.BLACK;
+
+	class PaintThread implements Runnable
+	{
+		private Graphics g;
+		private ArrayList<Integer> yVals;
+
+		public PaintThread(ArrayList<Integer> yVals, Graphics g)
+		{
+			this.yVals = yVals;
+			this.g = g.create();
+		}
+
+		@Override
+		public void run()
+		{
+			for (int i = 0; i < this.yVals.size(); i++)
+			{
+				int y = yVals.get(i);
+				int yPos = gridlineSize + (y * gridlineSize) + (y * tileSize);
+				int xPos = gridlineSize;
+				for (int x = 0; x < map.array[1].length; x++)
+				{
+					Entity entity = Entity.at(new Location(y, x));
+					if (entity instanceof Shark)
+					{
+						g.setColor(sharkColor);
+						g.fillRect(xPos, yPos, tileSize, tileSize);
+					}
+					else if (entity instanceof Fish)
+					{
+						g.setColor(fishColor);
+						g.fillRect(xPos, yPos, tileSize, tileSize);
+					}
+					xPos += gridlineSize + tileSize;
+				}
+			}
+		}
+	}
 	
 	@Override
 	public void paint(Graphics g)
 	{
-		g.setColor(gridlineColor);
-		g.fillRect(0, 0, preferredWidth, preferredWidth);
+		g.setColor(spaceColor);
+		g.fillRect(0, 0, preferredWidth + 10, preferredWidth + 10);
 
-		int yPos = gridlineSize;
-		for (int y = 0; y < map.array.length; y++)
+		ArrayList<Thread> threads = new ArrayList<>();
+		ArrayList<Integer> intervals = new ArrayList<>();
+		double numThreads = numVerticalTiles / 25;
+		double numerator;
+		for (numerator = 0; numerator < numThreads; numerator++)
 		{
-			int xPos = gridlineSize;
-			for (int x = 0; x < map.array[1].length; x++)
+			intervals.add((int) (map.array.length * (numerator / numThreads)));
+		}
+
+		for (int i = 0; i < intervals.size(); i++)
+		{
+			ArrayList<Integer> yVals = new ArrayList<Integer>();
+			int j = i + 1;
+
+			if (j < intervals.size())
 			{
-				Entity entity = Entity.at(new Location(y, x));
-				
-				if (entity instanceof Shark)
+				for (int y = intervals.get(i); y < intervals.get(j); y++)
 				{
-					g.setColor(sharkColor);
-					g.fillRect(xPos, yPos, tileSize, tileSize);
+					yVals.add(y);
 				}
-				else if (entity instanceof Fish)
+			}
+			else
+			{
+				for (int y = intervals.get(i); y < map.array.length; y++)
 				{
-					g.setColor(fishColor);
-					g.fillRect(xPos, yPos, tileSize, tileSize);
+					yVals.add(y);
 				}
-				else
+			}
+
+			Thread t = new Thread(new PaintThread(yVals, g));
+			threads.add(t);
+			t.start();	
+		}
+
+		WaTor.waitForThreads(threads);
+	}
+
+	public static void waitForThreads(ArrayList<Thread> threads)
+	{
+		boolean threadsDone = false;
+		while (!threadsDone)
+		{
+			threadsDone = true;
+			i: for (Thread tr : threads)
+			{
+				if (tr.isAlive())
 				{
-					g.setColor(spaceColor);
-					g.fillRect(xPos, yPos, tileSize, tileSize);
+					threadsDone = false;
+					break i;
 				}
-				
-				xPos += gridlineSize + tileSize;
+			}
+		}
+	}
+	
+	int secsPassed = 0;
+	ArrayList<Double> speedList = new ArrayList<>();
+	
+	public Timer tim = new Timer(1000, new ActionListener()
+	{
+		
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			secsPassed++;
+			speedList.add((double) map.chrononNum / (double)secsPassed);
+		}
+	});
+	
+	public double averageSimulationSpeed()
+	{
+		double sum = 0;
+		for (double d : speedList)
+		{
+			sum += d;	
+		}
+		return sum / (double) speedList.size(); // Ticks per second
+	}
+	
+
+	class ChrononClock implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0)
+		{
+			tick();
+			if (map.chrononNum >= 5 && map.chrononNum % 5 == 0)
+			{
+				System.out.println(map.chrononNum + " : " + averageSimulationSpeed());
 			}
 			
-			yPos += gridlineSize + tileSize;
-
 		}
 	}
 
+	private int delay = 10;
+	private Timer timer = new Timer(delay, new ChrononClock());
+
+	private int tickNum = 0;
+
+	public int INITIAL_DELAY = 350;
 }

@@ -25,6 +25,8 @@ public class Fish extends Entity
 		array[loc.getY()][loc.getX()] = this;
 		survived = 0;
 		location = loc;
+		id = idAssign;
+		idAssign++;
 	}
 
 	/**
@@ -35,24 +37,35 @@ public class Fish extends Entity
 	public boolean move()
 	{
 		survived++;
-
 		updateAdjacencyLists();
-		
-		boolean hasAdjSpace = this.adjacentSpaces.size() > 0 ? true : false;
-		
-		boolean moved = true;
-		if (hasAdjSpace)
+		synchronized (adjacentSpaces)
 		{
-			location = adjacentSpaces.get(WaTor.R.nextInt(adjacentSpaces.size()));
+			int size = this.adjacentSpaces.size();
+			boolean hasAdjSpace = size > 0 ? true : false;
+			
+			boolean moved = true;
+			if (hasAdjSpace)
+			{
+				try
+				{
+					location = adjacentSpaces.get(WaTor.R.nextInt(size));
+
+				}
+				catch (IllegalArgumentException e)
+				{
+					System.out.println(size);
+					e.printStackTrace();
+
+					System.exit(0);
+				}
+			}
+			else
+			{
+				moved = false;
+			}	
+			map.nextArray[location.getY()][location.getX()] = this;
+			return moved;	
 		}
-		else
-		{
-			moved = false;
-		}
-		
-		map.nextArray[location.getY()][location.getX()] = this;
-		
-		return moved;
 	}
 	
 	/**
