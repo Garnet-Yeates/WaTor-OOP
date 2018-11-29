@@ -16,6 +16,7 @@ import edu.wit.yeatesg.wator.objects.Entity;
 import edu.wit.yeatesg.wator.objects.Fish;
 import edu.wit.yeatesg.wator.objects.Location;
 import edu.wit.yeatesg.wator.objects.Map;
+import edu.wit.yeatesg.wator.objects.Map.Preset;
 import edu.wit.yeatesg.wator.objects.Shark;
 
 public class WaTor extends JPanel
@@ -31,29 +32,32 @@ public class WaTor extends JPanel
 
 	public static void main(String[] args)
 	{
-		openDisplayGUI(1915, 0);
+		openDisplayGUI(950, 0);
+		Map.setPreset(Preset.FAST_CYCLE);
 	}
 
 	private static void openDisplayGUI(int width, int gridThickness)
 	{
 		JFrame gameFrame = new JFrame();
-		WaTor gamePanel = new WaTor(width, gridThickness, gameFrame);
-		gamePanel.setFrameWidth();
-		gamePanel.map.presetCycle1();
+		new WaTor(width, gridThickness, gameFrame);
 	}
 	
-	public void setFrameWidth()
+	public static void waitForThreads(ArrayList<Thread> threads)
 	{
-		this.setPreferredSize(new Dimension(this.preferredWidth, this.preferredHeight));
-		container.getContentPane().add(this);
-		container.pack();
-		container.getContentPane().setBackground(Color.LIGHT_GRAY);
-		container.setResizable(false);
-		container.setVisible(true);
-		container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		container.add(this);		
+		boolean threadsDone = false;
+		while (!threadsDone)
+		{
+			threadsDone = true;
+			i: for (Thread tr : threads)
+			{
+				if (tr.isAlive())
+				{
+					threadsDone = false;
+					break i;
+				}
+			}
+		}
 	}
-	
 	
 	
 	// Constructor and Instance Fields
@@ -68,6 +72,7 @@ public class WaTor extends JPanel
 	private int preferredHeight;
 
 	private int numVerticalTiles;
+	private int numHorizontalTiles;
 
 	private Map map;
 
@@ -76,14 +81,14 @@ public class WaTor extends JPanel
 		this.container = container;
 		setSpatialFields(numHorizontalTiles, gridlineSize);
 
-		map = new Map(numHorizontalTiles, numVerticalTiles, this);
+		map = new Map(this.numHorizontalTiles, numVerticalTiles, this);
 
 		map.randomFill(0.99, 0.01);
 		repaint();
 
 		timer.setInitialDelay(0);
 		timer.start();
-		tim.start();		
+		secondsTimer.start();	
 	}
 	
 	/**
@@ -106,20 +111,30 @@ public class WaTor extends JPanel
 	 */
 	private void setSpatialFields(int numHorizontalTiles, int gridlineSize)
 	{
-		this.tileSize = (int) Math.ceil(((double) PREF_X_BOUND - (double) numGridlines*gridlineSize) / (double) numHorizontalTiles);
+		this.tileSize = (int) (((double) PREF_X_BOUND - (double) numGridlines*gridlineSize) / (double) numHorizontalTiles);
+		System.out.println(this.tileSize);
+						
+		this.numHorizontalTiles = numHorizontalTiles;
 		
-		numHorizontalTiles = (PREF_X_BOUND / tileSize);
-				
-		this.numGridlines = numHorizontalTiles + 1;
+		this.numGridlines = this.numHorizontalTiles + 1;
 		this.gridlineSize = gridlineSize;
 				
-		this.numVerticalTiles = (int) (((double) PREF_Y_BOUND / (double) PREF_X_BOUND) * (double) numHorizontalTiles);
-
-		this.preferredHeight = numVerticalTiles*tileSize + numGridlines*gridlineSize - 10;
-		this.preferredWidth = numHorizontalTiles*tileSize + numGridlines*gridlineSize - 10;
+		this.numVerticalTiles = (int) (((double) PREF_Y_BOUND / (double) PREF_X_BOUND) * (double) this.numHorizontalTiles);
+		System.out.println(this.numHorizontalTiles + " " + numVerticalTiles);
 		
-		System.out.println(numHorizontalTiles + " x " + numVerticalTiles);
-
+		this.preferredHeight = numVerticalTiles*tileSize + numGridlines*gridlineSize - 10;
+		this.preferredWidth = this.numHorizontalTiles*tileSize + numGridlines*gridlineSize - 10;
+		
+		System.out.println(this.numHorizontalTiles + " x " + numVerticalTiles);
+		
+		this.setPreferredSize(new Dimension(this.preferredWidth, this.preferredHeight));
+		container.getContentPane().add(this);
+		container.pack();
+		container.getContentPane().setBackground(Color.LIGHT_GRAY);
+		container.setResizable(false);
+		container.setVisible(true);
+		container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		container.add(this);		
 	}
 
 	@Override
@@ -212,28 +227,11 @@ public class WaTor extends JPanel
 
 		WaTor.waitForThreads(threads);
 	}
-
-	public static void waitForThreads(ArrayList<Thread> threads)
-	{
-		boolean threadsDone = false;
-		while (!threadsDone)
-		{
-			threadsDone = true;
-			i: for (Thread tr : threads)
-			{
-				if (tr.isAlive())
-				{
-					threadsDone = false;
-					break i;
-				}
-			}
-		}
-	}
 	
 	int secsPassed = 0;
 	ArrayList<Double> speedList = new ArrayList<>();
 	
-	public Timer tim = new Timer(1000, new ActionListener()
+	public Timer secondsTimer = new Timer(1000, new ActionListener()
 	{
 		
 		@Override
@@ -275,4 +273,5 @@ public class WaTor extends JPanel
 	private int tickNum = 0;
 
 	public int INITIAL_DELAY = 350;
+
 }

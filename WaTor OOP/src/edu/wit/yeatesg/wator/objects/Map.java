@@ -1,16 +1,10 @@
 package edu.wit.yeatesg.wator.objects;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-import javax.swing.Timer;
-
 import edu.wit.yeatesg.wator.containers.WaTor;
-import edu.wit.yeatesg.wator.interfaces.Movable;
-import edu.wit.yeatesg.wator.interfaces.Reproducable;
 
 public class Map
 {
@@ -18,13 +12,13 @@ public class Map
 
 	private int numHorizontalTiles;
 	private int numVerticalTiles;
-	
+
 	public Entity[][] array;
 	public Entity[][] nextArray;
 	public int max_X_index;
 	public int max_Y_index;
 	public int minIndex;
-	
+
 	public int chrononNum;
 
 	public Map(int numHorizontalTiles, int numVerticalTiles, WaTor container)
@@ -34,87 +28,68 @@ public class Map
 
 		this.numHorizontalTiles = numHorizontalTiles;
 		this.numVerticalTiles = numVerticalTiles;
-		
+
 		array = new Entity[numVerticalTiles][numHorizontalTiles];
 		nextArray = new Entity[numVerticalTiles][numHorizontalTiles];
-		clear(array);
-		clear(nextArray);
+		clearArray(array);
+		clearArray(nextArray);
 
 		max_Y_index = array.length - 1;
 		max_X_index = array[1].length - 1;
 		minIndex = 0;
 
 		chrononNum = 0;	
-		
-		tim.start();
 	}
-	
-	int secsPassed = 0;
-	ArrayList<Double> chroPerSecTable = new ArrayList<>();
-	
-	public Timer tim = new Timer(1000, new ActionListener()
-	{
-		
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			secsPassed++;
-			chroPerSecTable.add((double)chrononNum / (double)secsPassed);
-		}
-	});
-
 
 	public void nextChronon()
 	{
-		clear(nextArray);
-		doEntityMovements();
+		clearArray(nextArray);
+		doEntityActions();
 
 		array = cloneArray(nextArray);
-		clear(nextArray);
+		clearArray(nextArray);
 		chrononNum++;
-		
-      container.repaint();
+
+		container.repaint();
 	}
-		
-	class ArrayReader implements Runnable
+
+	/**
+	 * This class is a Runnable instance that is designed to cycle through a section of y-values in an Entity[yVals][xVals] array.
+	 * For each y value it cycles through, it also cycles through the respective x-values of that y-value. This means that in a
+	 * 1800x1000 array, if 10 ActThreads were assigned to 100 y-values each, then each thread will have to do 1800 x values instead
+	 * of one thread having to do 1.8 million. In essencusing multithreading with ActThreads makes the program run much faster
+	 * @author yeatesg
+	 */
+	class ActThread implements Runnable
 	{
 		private ArrayList<Integer> yVals;
-		
-		public ArrayReader(ArrayList<Integer> yVals)
+
+		public ActThread(ArrayList<Integer> yVals)
 		{
 			this.yVals = yVals;
 		}
-		
+
 		@Override
 		public void run()
 		{
 			for (int i = 0; i < this.yVals.size(); i++)
 			{
+				
 				int y = yVals.get(i);
 				for (int x = 0; x <= max_X_index; x++)
 				{
 					Entity entity = Entity.at(new Location(y, x));
 					if (entity != null)
 					{					
-						if (entity instanceof Movable)
-						{
-							entity.move();
-						}
-						if (entity instanceof Reproducable)
-						{
-							entity.preReproduce();	
-						}				
-					}
-					
+						entity.move();
+						entity.preReproduce();	
+					}		
 				}						
-			}
-			
+			}	
 		}
-		
 	}
-	
 
-	public void doEntityMovements()
+	public void doEntityActions()
 	{
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		ArrayList<Integer> intervals = new ArrayList<>();
@@ -124,12 +99,12 @@ public class Map
 		{
 			intervals.add((int) (array.length * (numerator / numThreads)));
 		}
-				
+
 		for (int i = 0; i < intervals.size(); i++)
 		{
 			ArrayList<Integer> yVals = new ArrayList<Integer>();
 			int j = i + 1;
-			
+
 			if (j < intervals.size())
 			{
 				for (int y = intervals.get(i); y < intervals.get(j); y++)
@@ -144,45 +119,20 @@ public class Map
 					yVals.add(y);
 				}
 			}
-			
-			Thread t = new Thread(new ArrayReader(yVals));
+
+			Thread t = new Thread(new ActThread(yVals));
 			threads.add(t);
 			t.start();	
 		}
-		
-		
+
 		WaTor.waitForThreads(threads);
-	}
-
-	public void clear(Entity[][] clearing)
-	{
-		for (int y = 0; y < clearing.length; y++)
-		{
-			for (int x = 0; x < clearing[y].length; x++)
-			{
-				clearing[y][x] = null;
-			}
-		}
-	}
-
-	private static Entity[][] cloneArray(Entity[][] arr)
-	{
-		Entity[][] clone = new Entity[arr.length][arr[1].length];
-		for (int y = 0; y < arr.length; y++)
-		{
-			for (int x = 0; x < arr[y].length; x++)
-			{
-				clone[y][x] = arr[y][x];
-			}
-		}
-		return clone;
 	}
 
 	public void randomFill(double fishWeight, double sharkWeight)
 	{
 		assert (sharkWeight + fishWeight == 1);
 
-		clear(array);
+		clearArray(array);
 
 		int maxCells = (int) (numHorizontalTiles * numVerticalTiles * 0.45);
 		int minCells = (int) (numHorizontalTiles * numVerticalTiles * 0.25);
@@ -234,59 +184,79 @@ public class Map
 					{
 						new Fish(space);
 					}
-					
 				}
 			}
 		}
 	}
+
 	
-	public void presetFast()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 6;
-		Fish.ENERGY_WORTH = 3;
+	// Class fields and methods
 
-		Shark.INVULNERABILITY_TICKS = 3;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 1;
-		Shark.MAX_ENERGY = 12;
+
+	public static enum Preset
+	{
+		FAST_CYCLE, FULL_EXTINCTION, SLOW_CYCLE;
 	}
 
-	public void idek()
+	public static void setPreset(Preset s)
 	{
-		Fish.TICKS_TILL_REPRODUCE = 24;
-		Fish.ENERGY_WORTH = 6;
-
-		Shark.INVULNERABILITY_TICKS = 9;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 3;
-		Shark.MAX_ENERGY = 9;
-	}
-
-	public void presetFullExtinction()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 15;
-		Fish.ENERGY_WORTH = 10;
-
-		Shark.INVULNERABILITY_TICKS = 20;
-		Shark.BASE_ENERGY = 0;
-		Shark.TICKS_TILL_REPRODUCE = 1;
-	}
-
-	public void presetCycle1()
-	{
-		Fish.TICKS_TILL_REPRODUCE = 30;
-		Fish.ENERGY_WORTH = 4;
-
-		Shark.INVULNERABILITY_TICKS = 10;
-		Shark.BASE_ENERGY = 4;
-		Shark.TICKS_TILL_REPRODUCE = 4;
-	}
-
-	public void print()
-	{
-		for (int y = 0; y <= max_Y_index; y++)
+		switch (s)
 		{
-			for (int x = 0; x <= max_X_index; x++)
+		default:
+		case FAST_CYCLE:
+			Fish.TICKS_TILL_REPRODUCE = 8;
+			Fish.ENERGY_WORTH = 3;
+			Shark.INVULNERABILITY_TICKS = 3;
+			Shark.BASE_ENERGY = 0;
+			Shark.TICKS_TILL_REPRODUCE = 1;
+			Shark.MAX_ENERGY = 12;
+			break;
+		case FULL_EXTINCTION:
+			Fish.TICKS_TILL_REPRODUCE = 15;
+			Fish.ENERGY_WORTH = 10;
+			Shark.INVULNERABILITY_TICKS = 20;
+			Shark.BASE_ENERGY = 0;
+			Shark.TICKS_TILL_REPRODUCE = 1;
+			break;
+		case SLOW_CYCLE:
+			Fish.TICKS_TILL_REPRODUCE = 30;
+			Fish.ENERGY_WORTH = 4;
+			Shark.INVULNERABILITY_TICKS = 10;
+			Shark.BASE_ENERGY = 4;
+			Shark.TICKS_TILL_REPRODUCE = 4;
+			break;
+		}
+	}
+
+	public static void clearArray(Entity[][] clearing)
+	{
+		for (int y = 0; y < clearing.length; y++)
+		{
+			for (int x = 0; x < clearing[y].length; x++)
+			{
+				clearing[y][x] = null;
+			}
+		}
+	}
+
+	private static Entity[][] cloneArray(Entity[][] arr)
+	{
+		Entity[][] clone = new Entity[arr.length][arr[1].length];
+		for (int y = 0; y < arr.length; y++)
+		{
+			for (int x = 0; x < arr[y].length; x++)
+			{
+				clone[y][x] = arr[y][x];
+			}
+		}
+		return clone;
+	}
+
+	public static void printArray(Entity[][] array)	
+	{
+		for (int y = 0; y < array.length; y++)
+		{
+			for (int x = 0; x < array[1].length; x++)
 			{	
 				if (array[y][x] instanceof Shark)
 				{

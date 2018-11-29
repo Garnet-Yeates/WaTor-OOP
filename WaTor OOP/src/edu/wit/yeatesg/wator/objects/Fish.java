@@ -46,18 +46,7 @@ public class Fish extends Entity
 			boolean moved = true;
 			if (hasAdjSpace)
 			{
-				try
-				{
-					location = adjacentSpaces.get(WaTor.R.nextInt(size));
-
-				}
-				catch (IllegalArgumentException e)
-				{
-					System.out.println(size);
-					e.printStackTrace();
-
-					System.exit(0);
-				}
+				location = adjacentSpaces.get(WaTor.R.nextInt(size));
 			}
 			else
 			{

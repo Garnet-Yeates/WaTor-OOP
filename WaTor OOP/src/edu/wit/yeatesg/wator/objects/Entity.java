@@ -19,15 +19,15 @@ public abstract class Entity implements Movable, Reproducable
 	/** The number of game-ticks (chronons) that this Entity has survived for */
 	protected int survived;
 
-	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	/** Represents the set of the Locations of Fish that are adjacent to this entity */	
 	protected List<Location> adjacentFish = Collections.synchronizedList(new ArrayList<Location>());
-	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	/** Represents the set of the Locations of Sharks that are adjacent to this entity */	
 	protected List<Location> adjacentSharks = Collections.synchronizedList(new ArrayList<Location>());
-	/** Represents the set of the Locations of fish that are adjacent to this entity */	
+	/** Represents the set of the Locations of Spaces that are adjacent to this entity */	
 	protected List<Location> adjacentSpaces = Collections.synchronizedList(new ArrayList<Location>());
 
 	/**
-	 * Updates the Location list fields that represent locations the entities that are adjacent to this 
+	 * Updates the Location list fields that represent the locations of the entities that are adjacent to this 
 	 * Entity. In this program, adjacency is defined as any tile directly next to another tile (not
 	 * diagnal). See {@link #adjacentFish}, {@link #adjacentSharks}, and {@link #adjacentSpaces}
 	 */
@@ -38,7 +38,7 @@ public abstract class Entity implements Movable, Reproducable
 		adjacentSpaces.clear();
 
 		List<Location> nearby = getAdjacentLocations();
-		Iterator<Location> i = nearby.iterator(); // Must be in synchronized block
+		Iterator<Location> i = nearby.iterator(); 
 		while (i.hasNext())
 		{
 			Location loc = i.next();
@@ -56,11 +56,9 @@ public abstract class Entity implements Movable, Reproducable
 			{
 				adjacentSpaces.add(loc);
 			}
-
 		}
-
 	}
-
+	
 	/**
 	 * Obtains the list of all (max 4) adjacent Locations to this Entity. If there are less than 4
 	 * Locations in this list, it means that this Entity exists at an edge or corner of {@link Entity#map}
